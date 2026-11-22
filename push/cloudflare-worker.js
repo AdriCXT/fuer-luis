@@ -39,6 +39,7 @@ export default {
 
     let title, body;
     if (b.heart)                 { title = `${who} denkt an dich 💚`;        body = "Tipp, um ein Herz zurückzuschicken."; }
+    else if (b.kind === "letter"){ title = `${who} hat einen Brief geöffnet ✉️`; body = "Öffnen, " + String(b.text || "").slice(0, 80); }
     else if (b.kind === "draw")  { title = `${who} hat dir etwas gemalt 🎨`; body = "Schau ins Notenblatt."; }
     else                         { title = `${who} hat dir geschrieben ♪`;   body = String(b.text || "").slice(0, 140) || "Schau ins Notenblatt."; }
 
@@ -51,7 +52,7 @@ export default {
         include_aliases: { external_id: [env.ROOM + "-" + to] },
         headings: { en: title, de: title },
         contents: { en: body, de: body },
-        web_url: (env.SITE || ORIGIN) + (b.heart ? "" : "#m8")
+        web_url: (env.SITE || ORIGIN) + (b.heart ? "" : b.kind === "letter" ? "#m7" : "#m8")
       })
     });
     return new Response(await r.text(), { status: r.status, headers: { ...cors, "Content-Type": "application/json" } });
