@@ -22,16 +22,16 @@ html,body{margin:0;height:100%;background:#06221f;color:#e3c98d;font-family:"Cor
 #g.on{display:flex}
 .m{width:76px;height:76px;border-radius:50%;border:1px solid #c4a15a;display:grid;place-items:center;font-size:38px;color:#e3c98d;
   box-shadow:0 0 0 6px rgba(196,161,90,.08),inset 0 0 22px rgba(196,161,90,.12)}
-h1{margin:0;font-weight:500;font-size:26px;letter-spacing:.04em}
-p{margin:-8px 0 0;font-size:16px;opacity:.7;font-style:italic;text-align:center}
-form{display:flex;flex-direction:column;align-items:center;gap:12px;width:min(300px,86vw)}
-input{width:100%;box-sizing:border-box;padding:13px 16px;border-radius:14px;border:1px solid rgba(196,161,90,.45);
+#g h1{margin:0;font-weight:500;font-size:26px;letter-spacing:.04em}
+#g p{margin:-8px 0 0;font-size:16px;opacity:.7;font-style:italic;text-align:center}
+#g form{display:flex;flex-direction:column;align-items:center;gap:12px;width:min(300px,86vw)}
+#g input{width:100%;box-sizing:border-box;padding:13px 16px;border-radius:14px;border:1px solid rgba(196,161,90,.45);
   background:rgba(255,255,255,.06);color:#f3e6c4;font:17px/1.2 -apple-system,system-ui,sans-serif;text-align:center;outline:none;
   -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
-input:focus{border-color:#e3c98d;box-shadow:0 0 0 3px rgba(227,201,141,.18)}
-button{padding:11px 26px;border-radius:999px;border:1px solid #c4a15a;background:linear-gradient(#d9bd7c,#b8934c);color:#1d1606;
+#g input:focus{border-color:#e3c98d;box-shadow:0 0 0 3px rgba(227,201,141,.18)}
+#g button{padding:11px 26px;border-radius:999px;border:1px solid #c4a15a;background:linear-gradient(#d9bd7c,#b8934c);color:#1d1606;
   font:600 15px -apple-system,system-ui,sans-serif;letter-spacing:.02em;cursor:pointer}
-button:disabled{opacity:.6}
+#g button:disabled{opacity:.6}
 .err{animation:sh .42s}
 @keyframes sh{20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
 #s{min-height:1.2em;font:13px -apple-system,system-ui,sans-serif;opacity:.75}
@@ -57,7 +57,9 @@ const tob64=u=>{let s="";const a=new Uint8Array(u);for(let i=0;i<a.length;i+=819
 const all=b64(document.getElementById("d").textContent.trim()), salt=all.slice(0,16), iv=all.slice(16,28), ct=all.slice(28);
 const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
 const dec=async key=>new TextDecoder().decode(await S.decrypt({name:"AES-GCM",iv},key,ct));
-const show=html=>{document.open();document.write(html);document.close()};
+/* erst schreiben, wenn diese Hülle fertig geladen ist – sonst landet die Seite IN der Hülle (mit deren Styles) */
+const show=html=>{const go=()=>{document.open();document.write(html);document.close()};
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(go,0),{once:true});else setTimeout(go,0)};
 const g=document.getElementById("g"),f=document.getElementById("f"),w=document.getElementById("w"),b=document.getElementById("b"),st=document.getElementById("s");
 function ask(){g.classList.add("on");setTimeout(()=>w.focus(),60)}
 (async()=>{
