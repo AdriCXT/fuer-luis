@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+<meta name="googlebot" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#06221f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Für Luis">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<title>♪</title>
+<style>
+html,body{margin:0;height:100%;background:#06221f;color:#e3c98d;font-family:"Cormorant Garamond",Georgia,serif}
+#g{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;
+  background:radial-gradient(120% 80% at 50% 0%,#0f4a42 0%,#06221f 60%,#041613 100%)}
+#g.on{display:flex}
+.m{width:76px;height:76px;border-radius:50%;border:1px solid #c4a15a;display:grid;place-items:center;font-size:38px;color:#e3c98d;
+  box-shadow:0 0 0 6px rgba(196,161,90,.08),inset 0 0 22px rgba(196,161,90,.12)}
+h1{margin:0;font-weight:500;font-size:26px;letter-spacing:.04em}
+p{margin:-8px 0 0;font-size:16px;opacity:.7;font-style:italic;text-align:center}
+form{display:flex;flex-direction:column;align-items:center;gap:12px;width:min(300px,86vw)}
+input{width:100%;box-sizing:border-box;padding:13px 16px;border-radius:14px;border:1px solid rgba(196,161,90,.45);
+  background:rgba(255,255,255,.06);color:#f3e6c4;font:17px/1.2 -apple-system,system-ui,sans-serif;text-align:center;outline:none;
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+input:focus{border-color:#e3c98d;box-shadow:0 0 0 3px rgba(227,201,141,.18)}
+button{padding:11px 26px;border-radius:999px;border:1px solid #c4a15a;background:linear-gradient(#d9bd7c,#b8934c);color:#1d1606;
+  font:600 15px -apple-system,system-ui,sans-serif;letter-spacing:.02em;cursor:pointer}
+button:disabled{opacity:.6}
+.err{animation:sh .42s}
+@keyframes sh{20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+#s{min-height:1.2em;font:13px -apple-system,system-ui,sans-serif;opacity:.75}
+</style>
+</head>
+<body>
+<div id="g">
+  <div class="m">♪</div>
+  <h1>Notenblatt</h1>
+  <p>Nur für zwei.</p>
+  <form id="f" autocomplete="off">
+    <input id="w" type="password" placeholder="Geheimwort" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="Geheimwort">
+    <button id="b" type="submit">Öffnen</button>
+    <div id="s" role="status"></div>
+  </form>
+</div>
+<script type="application/octet-stream" id="d">__PAYLOAD__</script>
+<script>
+(()=>{
+const IT=__ITER__, K="nb-key-v1", S=crypto.subtle;
+const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const tob64=u=>{let s="";const a=new Uint8Array(u);for(let i=0;i<a.length;i+=8192)s+=String.fromCharCode.apply(null,a.subarray(i,i+8192));return btoa(s)};
+const all=b64(document.getElementById("d").textContent.trim()), salt=all.slice(0,16), iv=all.slice(16,28), ct=all.slice(28);
+const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
+const dec=async key=>new TextDecoder().decode(await S.decrypt({name:"AES-GCM",iv},key,ct));
+const show=html=>{document.open();document.write(html);document.close()};
+const g=document.getElementById("g"),f=document.getElementById("f"),w=document.getElementById("w"),b=document.getElementById("b"),st=document.getElementById("s");
+function ask(){g.classList.add("on");setTimeout(()=>w.focus(),60)}
+(async()=>{
+  if(!S){g.classList.add("on");st.textContent="Bitte über https öffnen.";return}
+  const raw=ls.get(K);
+  if(raw){try{const key=await S.importKey("raw",b64(raw),"AES-GCM",false,["decrypt"]);show(await dec(key));return}catch(e){ls.del(K)}}
+  ask();
+})();
+f.onsubmit=async e=>{e.preventDefault();const word=w.value.trim().toLowerCase();if(!word)return;
+  b.disabled=true;st.textContent="Einen Moment …";
+  try{
+    const base=await S.importKey("raw",new TextEncoder().encode(word),"PBKDF2",false,["deriveKey"]);
+    const key=await S.deriveKey({name:"PBKDF2",salt,iterations:IT,hash:"SHA-256"},base,{name:"AES-GCM",length:256},true,["decrypt"]);
+    const html=await dec(key);
+    ls.set(K,tob64(await S.exportKey("raw",key)));
+    show(html);
+  }catch(err){b.disabled=false;st.textContent="Das war nicht das richtige Wort.";w.value="";
+    f.classList.remove("err");void f.offsetWidth;f.classList.add("err");try{navigator.vibrate&&navigator.vibrate([30,40,30])}catch(e){}w.focus()}
+};
+})();
+</script>
+</body>
+</html>
