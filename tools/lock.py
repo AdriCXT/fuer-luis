@@ -18,7 +18,10 @@ def key(word, salt, it=ITER):
 
 def encrypt(src, shell, out, word):
     pt = open(src, "rb").read()
-    salt, iv = os.urandom(16), os.urandom(12)
+    # fester Salt: gespeicherte Schlüssel auf den Geräten bleiben nach Updates gültig
+    sp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "salt.bin")
+    if not os.path.exists(sp): open(sp, "wb").write(os.urandom(16))
+    salt, iv = open(sp, "rb").read(), os.urandom(12)
     ct = AESGCM(key(word, salt)).encrypt(iv, pt, None)
     payload = base64.b64encode(salt + iv + ct).decode()
     html = open(shell, encoding="utf-8").read().replace("__PAYLOAD__", payload).replace("__ITER__", str(ITER))
