@@ -65,6 +65,7 @@ html,body{margin:0;height:100%;background:#06221f;color:#e3c98d;font-family:"Cor
 <script>
 (()=>{
 const IT=__ITER__, K="nb-key-v1", S=crypto.subtle;
+try{if("serviceWorker" in navigator)navigator.serviceWorker.register("offline-sw.js").catch(()=>{})}catch(e){}
 const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const tob64=u=>{let s="";const a=new Uint8Array(u);for(let i=0;i<a.length;i+=8192)s+=String.fromCharCode.apply(null,a.subarray(i,i+8192));return btoa(s)};
 const all=b64(document.getElementById("d").textContent.trim()), salt=all.slice(0,16), iv=all.slice(16,28), ct=all.slice(28);
