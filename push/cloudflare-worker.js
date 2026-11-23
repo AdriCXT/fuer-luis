@@ -21,6 +21,25 @@ export default {
       "Access-Control-Allow-Headers": "Content-Type"
     };
     if (req.method === "OPTIONS") return new Response(null, { headers: cors });
+    /* Live-Flugkarte: öffentliche OGN-Daten (Open Glider Network) für Schweinfurt und Umgebung */
+    const url = new URL(req.url);
+    if (req.method === "GET" && url.pathname === "/ogn") {
+      const B = { n: 50.65, s: 49.45, e: 11.10, w: 9.35 };
+      try {
+        const r = await fetch(`https://live.glidernet.org/lxml.php?a=1&b=${B.n}&c=${B.s}&d=${B.e}&e=${B.w}&z=1`, { cf: { cacheTtl: 15 } });
+        const xml = await r.text();
+        const out = [];
+        for (const m of xml.matchAll(/<m a="([^"]+)"/g)) {
+          const f = m[1].split(",");
+          const age = +f[6];
+          if (!(age <= 3600)) continue;
+          out.push({ lat: +f[0], lon: +f[1], cn: f[2], reg: f[3], alt: +f[4], age, trk: +f[7], spd: +f[8], vs: +f[9], type: +f[10], rx: f[11] });
+        }
+        return new Response(JSON.stringify({ t: Date.now(), list: out }), { headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "max-age=15" } });
+      } catch (e) {
+        return new Response(JSON.stringify({ t: Date.now(), list: [], error: true }), { status: 502, headers: { ...cors, "Content-Type": "application/json" } });
+      }
+    }
     if (req.method !== "POST") return new Response("Push-Relay läuft ✓", { headers: cors });
 
     let b;
