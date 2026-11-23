@@ -1,7 +1,7 @@
 /* Offline-Speicher: Seite öffnet sofort aus dem Handy-Speicher, Updates kommen im Hintergrund nach. */
-const CACHE = "notenblatt-v1";
+const CACHE = "notenblatt-v2";
 const STATIC = /\/(sounds|icons)\/|manifest\.webmanifest$/;
-const FONTS = /^https:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com)\//;
+const FONTS = /^https:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com|www\.gstatic\.com\/firebasejs\/)/;
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", e => e.waitUntil(
