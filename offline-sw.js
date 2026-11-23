@@ -1,5 +1,5 @@
-/* Offline-Speicher: Seite öffnet sofort aus dem Handy-Speicher, Updates kommen im Hintergrund nach. */
-const CACHE = "notenblatt-v2";
+/* Offline-Speicher: Seite kommt immer frisch aus dem Netz; nur offline (oder bei sehr langsamem Netz) aus dem Handy-Speicher. */
+const CACHE = "notenblatt-v3";
 const STATIC = /\/(sounds|icons)\/|manifest\.webmanifest$/;
 const FONTS = /^https:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com|www\.gstatic\.com\/firebasejs\/)/;
 
@@ -15,15 +15,20 @@ self.addEventListener("fetch", e => {
   const u = new URL(r.url);
   if (u.pathname.includes("/push/")) return;               // OneSignal nicht anfassen
 
-  /* Seite selbst: sofort aus dem Speicher, im Hintergrund frisch holen */
+  /* Seite selbst: zuerst frisch aus dem Netz, nur offline / nach 5 s ohne Antwort aus dem Speicher */
   const root = new URL("./", self.registration.scope).pathname;
   if (r.mode === "navigate" && u.origin === location.origin && (u.pathname === root || u.pathname === root + "index.html")) {
     e.respondWith(caches.open(CACHE).then(async c => {
       const key = new URL("./", self.registration.scope).href;
-      const hit = await c.match(key);
-      const net = fetch(r).then(res => { if (res.ok) c.put(key, res.clone()); return res; }).catch(() => hit);
-      if (hit) { e.waitUntil(net); return hit; }
-      return net;
+      const net = fetch(r, { cache: "no-store" }).then(res => { if (res.ok) c.put(key, res.clone()); return res; });
+      const slow = new Promise(res => setTimeout(res, 5000)).then(() => c.match(key));
+      try {
+        const first = await Promise.race([net, slow]);
+        if (first) return first;
+        return await net;
+      } catch (err) {
+        return (await c.match(key)) || Response.error();
+      }
     }));
     return;
   }
