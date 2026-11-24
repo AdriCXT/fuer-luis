@@ -76,7 +76,7 @@ export default {
         include_aliases: { external_id: [env.ROOM + "-" + to] },
         headings: { en: title, de: title },
         contents: { en: body, de: body },
-        web_url: (env.SITE || ORIGIN) + (b.heart ? "" : b.kind === "letter" ? "#m7" : "#m8")
+        web_url: (/^https:\/\/adricxt\.github\.io\/[a-z0-9-]{1,40}\/$/.test(b.site || "") ? b.site : (env.SITE || ORIGIN)) + (b.heart ? "" : b.kind === "letter" ? "#m7" : "#m8")
       })
     });
     return new Response(await r.text(), { status: r.status, headers: { ...cors, "Content-Type": "application/json" } });
