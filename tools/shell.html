@@ -93,7 +93,7 @@ function showForm(){clearInterval(tick);cd.hidden=true;tag.textContent="Nur für
   if(raw){try{const key=await S.importKey("raw",b64(raw),"AES-GCM",false,["decrypt"]);show(await dec(key));return}catch(e){ls.del(K)}}
   ask();
 })();
-f.onsubmit=async e=>{e.preventDefault();const word=w.value.trim().toLowerCase();if(!word)return;
+f.onsubmit=async e=>{e.preventDefault();const word=w.value.toLowerCase().replace(/[\s\-_.]+/g,"");if(!word)return;
   b.disabled=true;st.textContent="Einen Moment …";
   try{
     const base=await S.importKey("raw",new TextEncoder().encode(word),"PBKDF2",false,["deriveKey"]);

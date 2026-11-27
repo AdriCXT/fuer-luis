@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives import hashes
 ITER = 600_000
 
 def key(word, salt, it=ITER):
-    return PBKDF2HMAC(hashes.SHA256(), 32, salt, it).derive(word.strip().lower().encode())
+    return PBKDF2HMAC(hashes.SHA256(), 32, salt, it).derive(re.sub(r"[\s\-_.]+", "", word.lower()).encode())
 
 def encrypt(src, shell, out, word):
     pt = open(src, "rb").read()
